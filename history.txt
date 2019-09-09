@@ -1,0 +1,19 @@
+lscd ..ls
+clear
+cd ./tempocd tempocd ..
+cd tempo
+pwdpwspwd
+pws
+pwdpwspwd
+pws
+pwdpwsls
+pwd
+lspwdcd ./tempo
+cd A2
+lsclearls
+pwd
+ls -l &pwdls
+cd ./tempo
+pwdpinfovim &
+echo
+echo "Srivathsan"clear
