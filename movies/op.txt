@@ -1,0 +1,6 @@
+drwxrwxr-x 4 srivathsan srivathsan  4096 Sep 15 21:47 .
+drwxrwxr-x 4 srivathsan srivathsan  4096 Sep 15 21:47 op.txt
+drwxrwxr-x 4 srivathsan srivathsan  4096 Sep 15 21:47 spiderffh
+drwxrwxr-x 4 srivathsan srivathsan  4096 Sep 15 21:47 redstone
+drwxrwxr-x 4 srivathsan srivathsan  4096 Sep 15 21:47 ragnarok
+drwxrwxr-x 7 srivathsan srivathsan  4096 Sep 16 00:16 ..

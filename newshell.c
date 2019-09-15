@@ -21,34 +21,39 @@ int main()
     char homedir[100];
     char username[30];
     gethostname(username, 30);
-    realpath("/home/srivathsan/Desktop/CSE/A2",homedir);
-    int HOMELEN=strlen(homedir);
+    realpath("/home/srivathsan/Desktop/CSE/A3", homedir);
+    int HOMELEN = strlen(homedir);
     char dum[100];
-    getcwd(dum,100);
-    if(strlen(dum) < HOMELEN)
-        strcpy(curdir,dum);
-    else if(strlen(dum) == HOMELEN)
-    {
-        int fr=0;
-        for(int l=0;l<HOMELEN;l++)
-            {
-                if(dum[l] != homedir[l])
-                    {fr=1; break;}
-            }
-        if(fr == 1)
+    getcwd(dum, 100);
+    if (strlen(dum) < HOMELEN)
         strcpy(curdir, dum);
+    else if (strlen(dum) == HOMELEN)
+    {
+        int fr = 0;
+        for (int l = 0; l < HOMELEN; l++)
+        {
+            if (dum[l] != homedir[l])
+            {
+                fr = 1;
+                break;
+            }
+        }
+        if (fr == 1)
+            strcpy(curdir, dum);
         else
-        {strcpy(curdir,homedir);        
-        curdir[HOMELEN] = '\0';}
+        {
+            strcpy(curdir, homedir);
+            curdir[HOMELEN] = '\0';
+        }
     }
     else
-        strcpy(curdir,dum);
-        
-    int numchildproc=0;
+        strcpy(curdir, dum);
+
+    int numchildproc = 0;
     while (1)
     {
-        int childprocid[30];                        //Array having all child pid's
-        char childprocesses[30][20];                  //Array containing all names of child processes
+        int childprocid[30];         //Array having all child pid's
+        char childprocesses[30][20]; //Array containing all names of child processes
         char *temp = (char *)calloc(50, sizeof(char));
         char **commandsarray = (char **)calloc(10000, sizeof(char *));
         for (int i = 0; i < 20; i++)
@@ -66,17 +71,47 @@ int main()
 
         fflush(stdin);
         scanf(" %[^\n]s", command);
+        int amper = 0, inred = 0, outred = 0, pipe = 0;
+        int REDIRECTFLAG = 0;
         display(command, commandsarray, &numberofcommands);
+
         for (int i = 0; i < numberofcommands; i++)
         {
-            for(int halo = 0; halo < strlen(commandsarray[i]); halo++)
-                if(commandsarray[i][halo] != ' ')
-                    {commandsarray[i] = &commandsarray[i][halo]; break;}
-            for(int rock = strlen(commandsarray[i]) - 1; rock > 0; rock-- )
-                if(commandsarray[i][rock] != ' ')
-                    {commandsarray[i][rock+1]= '\0';break;}
+            for (int halo = 0; halo < strlen(commandsarray[i]); halo++)
+                if (commandsarray[i][halo] != ' ')
+                {
+                    commandsarray[i] = &commandsarray[i][halo];
+                    break;
+                }
+            for (int rock = strlen(commandsarray[i]) - 1; rock > 0; rock--)
+                if (commandsarray[i][rock] != ' ')
+                {
+                    commandsarray[i][rock + 1] = '\0';
+                    break;
+                }
+            for (int g = 0; g < strlen(commandsarray[i]); g++)
+            {
+                if (commandsarray[i][g] == '&')
+                    amper = 1;
+                if (commandsarray[i][g] == '<')
+                {
+                    inred = 1;
+                    REDIRECTFLAG = 1;
+                }
 
-                addtohistory(commandsarray[i]);
+                if (commandsarray[i][g] == '>')
+                {
+                    outred = 1;
+                    REDIRECTFLAG = 2;
+                }
+                if (commandsarray[i][g] == "|")
+                {
+                    pipe = 1;
+                    REDIRECTFLAG = 3;
+                }
+            }
+
+            addtohistory(commandsarray[i]);
 
             if (strcmp(commandsarray[i], "pwd") == 0)
             {
@@ -85,18 +120,22 @@ int main()
                 printf("%s\n", b);
                 free(b);
             }
-            else if (strncmp(commandsarray[i], "cd", 2) == 0)
+            else if (strncmp(commandsarray[i], "cd", 2) == 0 && commandsarray[i][2] == ' ')
             {
-                char **arglist = (char **)malloc(4*sizeof(char*)); int d=0;
-                char *tk = strtok(commandsarray[i]," ");
-                while( tk != NULL)
+                char **arglist = (char **)malloc(4 * sizeof(char *));
+                int d = 0;
+                char *tk = strtok(commandsarray[i], " ");
+                while (tk != NULL)
                 {
-                    arglist[d++]=tk;
-                    tk=strtok(NULL ," ");
+                    arglist[d++] = tk;
+                    tk = strtok(NULL, " ");
                 }
-                char *t = (char*)malloc(50*sizeof(char));
+                char *t = (char *)malloc(50 * sizeof(char));
                 t = arglist[1];
-                changedir(t);
+                if (strcmp(t, "~") == 0)
+                    changedir(homedir);
+                else
+                    changedir(t);
                 getcwd(temp, 100);
                 free(arglist);
                 int throughhome = 1;
@@ -137,17 +176,19 @@ int main()
                     }
                 }
             }
+
             else if (strncmp(commandsarray[i], "ls", 2) == 0)
             {
                 if (strlen(commandsarray[i]) == 2)
                 {
-                    list();
+
+                    list(REDIRECTFLAG, ".");
                     continue;
                 }
-                int num = 0, dirpos = 0;
+                int num = 0, dirpos = 0, outputpos = 0;
                 int countl = 0, counta = 0, countd = 0;
                 char **fldr = (char **)calloc(10, sizeof(char *));
-                char *tok = (char *)malloc(80*sizeof(char));
+                char *tok = (char *)malloc(80 * sizeof(char));
                 tok = strtok(commandsarray[i], " ");
                 while (tok != NULL)
                 {
@@ -169,73 +210,110 @@ int main()
                     }
                     else
                     {
-                        countd++;
-                        dirpos = x;
+                        if (strcmp(fldr[x], ">") != 0 && strcmp(fldr[x], "<") != 0 && strcmp(fldr[x], "|") != 0)
+                            countd++;
+                        if(countd == 1 && REDIRECTFLAG == 0)
+                            dirpos = x;
+                        if (countd == 1 && REDIRECTFLAG == 2)
+                            {   
+                                outputpos = num - 1;
+                            }
+                        if (countd == 2 && REDIRECTFLAG == 2)
+                        {
+                            outputpos = num - 1;
+                            dirpos = num - 3;
+                        }
                     }
                 }
                 if (countd > 0)
                 {
                     char *mario = (char *)malloc(50 * sizeof(char));
                     getcwd(mario, 50);
-                    if(chdir(fldr[dirpos]) < 0)
+                    if (dirpos != 0)
                     {
-                        perror(fldr[dirpos]);
-                        continue;
-                    }
                     
-                    if (countl == 0 && counta == 0)
-                        list();
-                    else if (countl == 0 && counta > 0)
-                        listhidden();
-                    else if (countl > 0 && counta == 0)
-                        longlist(0);
-                    else
-                        longlist(1);
+                        if (strcmp(fldr[dirpos], "~") == 0)
+                            chdir(homedir);
+
+                        else
+                        {
+                            if (countl == 0 && counta == 0)
+                                list(REDIRECTFLAG, fldr[dirpos], fldr[outputpos]);
+                            else if (countl == 0 && counta > 0)
+                                listhidden(REDIRECTFLAG, fldr[dirpos], fldr[outputpos]);
+                            else if (countl > 0 && counta == 0)
+                                longlist(0, REDIRECTFLAG, fldr[dirpos], fldr[outputpos]);
+                            else
+                                longlist(1, REDIRECTFLAG, fldr[dirpos], fldr[outputpos]);
+                        }
+                
+                        
+                    }    
+                
+                    else if(dirpos == 0)
+                    {
+                        if (countl == 0 && counta == 0)
+                            list(REDIRECTFLAG, ".", fldr[outputpos]);
+                        else if (countl == 0 && counta > 0)
+                            listhidden(REDIRECTFLAG, ".", fldr[outputpos]);
+                        else if (countl > 0 && counta == 0)
+                            longlist(0, REDIRECTFLAG, ".", fldr[outputpos]);
+                        else
+                            longlist(1, REDIRECTFLAG, ".", fldr[outputpos]);
+                    }
                     chdir(mario);
                 }
                 else
                 {
-                    if (countl == 0 && counta == 0)
-                        list();
-                    else if (countl == 0 && counta > 0)
-                        listhidden();
-                    else if (countl > 0 && counta == 0)
-                        longlist(0);
-                    else
-                        longlist(1);
+                        if (countl == 0 && counta == 0)
+                            list(REDIRECTFLAG, ".", fldr[outputpos]);
+                        else if (countl == 0 && counta > 0)
+                            listhidden(REDIRECTFLAG, ".", fldr[outputpos]);
+                        else if (countl > 0 && counta == 0)
+                            longlist(0, REDIRECTFLAG, ".", fldr[outputpos]);
+                        else
+                            longlist(1, REDIRECTFLAG, ".", fldr[outputpos]);
                 }
+                
             }
-            else if(strncmp(commandsarray[i],"pinfo",5) == 0)
+            else if (strncmp(commandsarray[i], "pinfo", 5) == 0)
             {
-                for(int u = 0; u < strlen(commandsarray[i]); u++)
-                if(commandsarray[i][u] != ' ')
-                    {commandsarray[i] = &commandsarray[i][u]; break;}
-                for(int m = strlen(commandsarray[i]) - 1; m > 0; m-- )
-                if(commandsarray[i][m] != ' ')
-                    {commandsarray[i][m+1]= '\0';break;}
-                
+                for (int u = 0; u < strlen(commandsarray[i]); u++)
+                    if (commandsarray[i][u] != ' ')
+                    {
+                        commandsarray[i] = &commandsarray[i][u];
+                        break;
+                    }
+                for (int m = strlen(commandsarray[i]) - 1; m > 0; m--)
+                    if (commandsarray[i][m] != ' ')
+                    {
+                        commandsarray[i][m + 1] = '\0';
+                        break;
+                    }
+
                 char **g = (char **)calloc(10, sizeof(char *));
-                char *ben = (char *)malloc(80*sizeof(char));  int s=0;
-                ben=strtok(commandsarray[i]," ");
-                while(ben != NULL)
+                char *ben = (char *)malloc(80 * sizeof(char));
+                int s = 0;
+                ben = strtok(commandsarray[i], " ");
+                while (ben != NULL)
                 {
-                    g[s]=ben;
+                    g[s] = ben;
                     s++;
-                    ben = strtok(NULL," ");
+                    ben = strtok(NULL, " ");
                 }
-                
-                if( s > 1 )
+
+                if (s > 1)
                 {
                     char ww[10];
-                    strcpy(ww,g[1]);
+                    strcpy(ww, g[1]);
                     // long long ez = converttoint(ww);
                     pinfo(ww);
                 }
                 else
                 {
                     int f = getpid();
-                    char it[10]="";
-                    sprintf(it,"%d",f);
+                    char it[10] = "";
+                    sprintf(it, "%d", f);
                     pinfo(it);
                 }
             }
@@ -244,59 +322,84 @@ int main()
                 char *u = &(commandsarray[i][5]);
                 printf("\"%s\"\n", u);
             }
-            else if( strcmp(commandsarray[i], "history") == 0)
+            else if (strcmp(commandsarray[i], "history") == 0)
             {
                 readhistory();
             }
             else
             {
                 char **F = (char **)calloc(10, sizeof(char *));
-                char *spi = (char *)malloc(80*sizeof(char));  int b=0;
-                int amper=0;
-                spi=strtok(commandsarray[i]," ");
-                while(spi != NULL)
+                char *spi = (char *)malloc(80 * sizeof(char));
+                int b = 0;
+                int ipos = 0, opos = 0;
+                spi = strtok(commandsarray[i], " ");
+                while (spi != NULL)
                 {
-                    F[b]=spi;
+                    F[b] = spi;
                     b++;
-                    if(strcmp(spi,"&") == 0)
-                    amper=1;
-                    spi = strtok(NULL," ");
+                    if (F[b] == '<')
+                        ipos = b;
+                    if (F[b] == '>')
+                        opos = b;
+                    spi = strtok(NULL, " ");
                 }
-                char syscommand[30];
-                strcpy(syscommand,F[0]);
-                if(b > 1)
+                if (inred == 1 && outred == 0 && pipe == 0)
+                {
+                    if (strcmp(F[0], "sort") == 0)
+                        systemcommand(F, 0, b);
+                }
+                else if (inred == 0 && outred == 1 && pipe == 0)
+                {
+                    // freopen(F[b], "a+",STDOUT);
+                    // int fds;
+                    // for(int l=0; l < opos; l++)
+                    // {
+                    // fds = open(F[0], O_RDONLY);
+                    // dup2(fds,0);
+                    // dup2(ofd,1);
+                    // printf()
+                    // }
+                }
+                else if (inred == 1 && outred == 1 && pipe == 0)
+                {
+                }
+                if (inred == 0 && outred == 0 && pipe == 0)
+                {
+                    char syscommand[30];
+                    strcpy(syscommand, F[0]);
+                    if (b > 1)
                     {
-                        if(amper == 1)
+                        if (amper == 1)
                         {
-                        int r= systemcommand(F,1);
-                        childprocid[numchildproc]=r;           //Storing one more child pid
-                        strcpy(childprocesses[numchildproc] , F[0]);
-                        numchildproc++;
+                            int r = systemcommand(F, 1, b);
+                            childprocid[numchildproc] = r; //Storing one more child pid
+                            strcpy(childprocesses[numchildproc], F[0]);
+                            numchildproc++;
                         }
                         else
                         {
-                            systemcommand(F,0);
+                            systemcommand(F, 0, b);
                         }
-                        
                     }
-                else
-                {
-                    systemcommand(F,0);               
+                    else
+                    {
+                        systemcommand(F, 0, b);
+                    }
                 }
-                
             }
-        int status;
-        int retid;
-        for(int f=0; f < numchildproc ; f++)
+            int status;
+            int retid;
+            for (int f = 0; f < numchildproc; f++)
             {
-                if ((retid=waitpid(childprocid[f],&status, WNOHANG | WUNTRACED)) > 0) {       // Return if no child exits or child stops
-                    if(WIFEXITED(status))
+                if ((retid = waitpid(childprocid[f], &status, WNOHANG | WUNTRACED)) > 0)
+                { // Return if no child exits or child stops
+                    if (WIFEXITED(status))
                     {
-                     fprintf(stderr, "%s with pid %d exited normally\n" ,childprocesses[f] ,retid) ;
+                        fprintf(stderr, "%s with pid %d exited normally\n", childprocesses[f], retid);
                     }
-                    if(WIFSIGNALED(status))
+                    if (WIFSIGNALED(status))
                     {
-                        fprintf(stderr, "%s with pid %d exited due to a signal", childprocesses[f],childprocid[f]);
+                        fprintf(stderr, "%s with pid %d exited due to a signal", childprocesses[f], childprocid[f]);
                     }
                 }
             }
@@ -305,7 +408,6 @@ int main()
         }
         // currentdir(curdir);
         free(commandsarray);
-        
     }
     return 0;
 }

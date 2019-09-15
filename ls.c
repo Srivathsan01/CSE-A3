@@ -11,35 +11,64 @@
 #include<grp.h>
 #include<fcntl.h>
 
-void list()
+void list(int REFLAG,char *ipfname, char *outfname)
 {
-    struct dirent *den;
-    DIR *directory = opendir(".");
+    struct dirent *den;    
+    DIR *directory = opendir(ipfname);
+    if(directory == NULL) {
+        perror("Path");
+        return;
+    }
     while ((den = readdir(directory)) != NULL)
     { 
-        if(strcmp(den->d_name,".") !=0 && strcmp(den->d_name,"..") !=0 ) 
-        printf("%s\n", den->d_name); 
+        if(den->d_name[0]!='.') 
+        {
+            if(REFLAG == 0)
+            printf("%s\n", den->d_name); 
+            else if(REFLAG == 2 || REFLAG == 3)
+            {
+                freopen(outfname,"a+",stdout);
+                printf("%s\n", den->d_name); 
+                freopen("/dev/tty","w",stdout);
+            }
+        }
     }
     closedir(directory);
 }
-
-void listhidden()
+// 
+void listhidden(int REFLAG,char *ipfname,  char *outfname)
 {
     struct dirent *den;
-    DIR *D=opendir(".");
+    DIR *D=opendir(ipfname);
     if (D == NULL)
     {
        perror(".");
        return;
     }
-    while (( den = readdir(D)) != NULL)
-    printf("%s\n",den->d_name);
+    if(REFLAG == 2)
+    {
+        freopen(outfname,"a+",stdout);
+        while (( den = readdir(D)) != NULL)
+        {   
+          printf("%s\n",den->d_name);
+        }
+        freopen("/dev/tty","w",stdout);
+    }
+
+    else
+    {
+        while (( den = readdir(D)) != NULL)
+        {   
+          printf("%s\n",den->d_name);
+        }
+    }
+    
     closedir(D);    
 }
-void longlist(int flag)
+void longlist(int flag,int REFLAG,char *ipfname,  char *outfname)
 {
     struct dirent *den;
-    DIR *direc = opendir(".");
+    DIR *direc = opendir(ipfname);
     char *username =(char *)calloc(30,sizeof(char));
     gethostname(username,30);
     if(direc ==NULL)
@@ -47,9 +76,14 @@ void longlist(int flag)
         printf("Error listing the files in the directory\n");
         return ;
     }
+    if(REFLAG ==2  || REFLAG == 3)
+    {  
+        freopen(outfname,"a+",stdout);
+    }
+   
     while ((den = readdir(direc)) != NULL)
     {
-        if(flag == 0 && ( strcmp(den->d_name,".")==0  ||  strcmp(den->d_name,"..")==0 ))
+        if(flag == 0 &&  den->d_name[0]=='.')
             continue;
         struct stat sri;
         stat(den->d_name,&sri);
@@ -83,7 +117,12 @@ void longlist(int flag)
         filepermission[10]='\0';
         char *tim = (char*)calloc(30,sizeof(char));
         strftime(tim,30,"%b %d %R",localtime(&sri.st_mtime));
+        
         printf("%s %lld %s %s %5lld %s %s\r\n" ,filepermission,(long long)sri.st_nlink,p->pw_name,g->gr_name,(long long)sri.st_size,tim,den->d_name);
-
+        
     }
+    if(REFLAG == 2 || REFLAG == 3)
+        {
+            freopen("/dev/tty", "w" , stdout);
+        }
 }
