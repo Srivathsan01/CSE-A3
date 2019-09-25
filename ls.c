@@ -11,7 +11,7 @@
 #include<grp.h>
 #include<fcntl.h>
 
-void list(int REFLAG,char *ipfname, char *outfname)
+void list(int REFLAG,char *ipfname,int outred, char *outfname)
 {
     struct dirent *den;    
     DIR *directory = opendir(ipfname);
@@ -19,24 +19,25 @@ void list(int REFLAG,char *ipfname, char *outfname)
         perror("Path");
         return;
     }
+    if(REFLAG == 2 || REFLAG == 3)
+        {
+            if(outred == 1)
+            freopen(outfname,"w",stdout);
+            else if(outred == 2)
+            freopen(outfname, "a+", stdout);
+        }
     while ((den = readdir(directory)) != NULL)
     { 
         if(den->d_name[0]!='.') 
         {
-            if(REFLAG == 0)
             printf("%s\n", den->d_name); 
-            else if(REFLAG == 2 || REFLAG == 3)
-            {
-                freopen(outfname,"a+",stdout);
-                printf("%s\n", den->d_name); 
-                freopen("/dev/tty","w",stdout);
-            }
         }
     }
+    freopen("/dev/tty","w",stdout);
     closedir(directory);
 }
 // 
-void listhidden(int REFLAG,char *ipfname,  char *outfname)
+void listhidden(int REFLAG,char *ipfname, int outred, char *outfname)
 {
     struct dirent *den;
     DIR *D=opendir(ipfname);
@@ -47,7 +48,10 @@ void listhidden(int REFLAG,char *ipfname,  char *outfname)
     }
     if(REFLAG == 2)
     {
-        freopen(outfname,"a+",stdout);
+        if(outred == 1)
+                freopen(outfname,"w",stdout);
+        else if(outred == 2)
+                freopen(outfname, "a+", stdout);freopen(outfname,"a+",stdout);
         while (( den = readdir(D)) != NULL)
         {   
           printf("%s\n",den->d_name);
@@ -65,7 +69,7 @@ void listhidden(int REFLAG,char *ipfname,  char *outfname)
     
     closedir(D);    
 }
-void longlist(int flag,int REFLAG,char *ipfname,  char *outfname)
+void longlist(int flag,int REFLAG,char *ipfname, int outred, char *outfname)
 {
     struct dirent *den;
     DIR *direc = opendir(ipfname);
@@ -76,9 +80,11 @@ void longlist(int flag,int REFLAG,char *ipfname,  char *outfname)
         printf("Error listing the files in the directory\n");
         return ;
     }
-    if(REFLAG ==2  || REFLAG == 3)
-    {  
-        freopen(outfname,"a+",stdout);
+    if(REFLAG ==2)
+    {  if(outred == 1)
+                freopen(outfname,"w",stdout);
+        else if(outred == 2)
+                freopen(outfname, "a+", stdout);freopen(outfname,"a+",stdout);
     }
    
     while ((den = readdir(direc)) != NULL)

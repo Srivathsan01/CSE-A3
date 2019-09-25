@@ -1,15 +1,5 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <errno.h>
-#include <sys/utsname.h>
-#include <signal.h>
-#include <sys/wait.h>    
-
-int systemcommand(char **syscom,int flag, int len)
+#include "headerfiles.h"
+int systemcommand(char **syscom,int flag, int len,int REDIR)
 {
     
     char **argu = (char **)malloc(100*sizeof(char));
@@ -17,6 +7,8 @@ int systemcommand(char **syscom,int flag, int len)
         argu[p] = (char*)malloc(40*sizeof(char));
         argu=syscom;
         argu[len]=NULL;
+        if(REDIR == 1 || REDIR == 3)
+        argu[1]=NULL;
         // argu[] = NULL;
         if(flag==1)         // & was given
         {

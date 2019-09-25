@@ -11,6 +11,14 @@
 #include <string.h>
 #include <dirent.h>
 #include <wait.h>
+struct Job
+{
+    int jobnumber;
+    char *procid;
+    char *procname;
+    int terminated;
+}JOBS[100];
+
 int main()
 {
     struct utsname udata;
@@ -104,13 +112,18 @@ int main()
                 {
                     outred++;
                     REDIRECTFLAG = 2;                       // 2 means >
+                    if(commandsarray[i][g+1] == '>')
+                        {outred++;
+                        g++;}
                 }
                 if (commandsarray[i][g] == "|")
                 {
                     pipe = 1;
-                    REDIRECTFLAG = 3;                       // 3 means both occur
+                    REDIRECTFLAG = 4;                       // 3 means both occur
                 }
             }
+            if(inred > 0 && outred > 0)
+                REDIRECTFLAG = 3;
 
             addtohistory(commandsarray[i]);
 
@@ -177,13 +190,16 @@ int main()
                     }
                 }
             }
-
+            else if(strncmp(commandsarray[i] , "jobs", 4) ==0)
+            {
+                jobs(childprocesses,childprocid,numchildproc);
+            }
             else if (strncmp(commandsarray[i], "ls", 2) == 0)
             {
                 if (strlen(commandsarray[i]) == 2)
                 {
 
-                    list(REDIRECTFLAG, ".");
+                    list(REDIRECTFLAG, ".",outred);
                     continue;
                 }
                 int num = 0, dirpos = 0, outputpos = 0;
@@ -239,13 +255,13 @@ int main()
                         else
                         {
                             if (countl == 0 && counta == 0)
-                                list(REDIRECTFLAG, fldr[dirpos], fldr[outputpos]);
+                                list(REDIRECTFLAG, fldr[dirpos],outred, fldr[outputpos]);
                             else if (countl == 0 && counta > 0)
-                                listhidden(REDIRECTFLAG, fldr[dirpos], fldr[outputpos]);
+                                listhidden(REDIRECTFLAG, fldr[dirpos],outred, fldr[outputpos]);
                             else if (countl > 0 && counta == 0)
-                                longlist(0, REDIRECTFLAG, fldr[dirpos], fldr[outputpos]);
+                                longlist(0, REDIRECTFLAG, fldr[dirpos],outred, fldr[outputpos]);
                             else
-                                longlist(1, REDIRECTFLAG, fldr[dirpos], fldr[outputpos]);
+                                longlist(1, REDIRECTFLAG, fldr[dirpos],outred ,fldr[outputpos]);
                         }
                 
                         
@@ -254,26 +270,26 @@ int main()
                     else if(dirpos == 0)
                     {
                         if (countl == 0 && counta == 0)
-                            list(REDIRECTFLAG, ".", fldr[outputpos]);
+                            list(REDIRECTFLAG, ".",outred, fldr[outputpos]);
                         else if (countl == 0 && counta > 0)
-                            listhidden(REDIRECTFLAG, ".", fldr[outputpos]);
+                            listhidden(REDIRECTFLAG, ".",outred, fldr[outputpos]);
                         else if (countl > 0 && counta == 0)
-                            longlist(0, REDIRECTFLAG, ".", fldr[outputpos]);
+                            longlist(0, REDIRECTFLAG, ".",outred, fldr[outputpos]);
                         else
-                            longlist(1, REDIRECTFLAG, ".", fldr[outputpos]);
+                            longlist(1, REDIRECTFLAG, ".",outred, fldr[outputpos]);
                     }
                     chdir(mario);
                 }
                 else
                 {
                         if (countl == 0 && counta == 0)
-                            list(REDIRECTFLAG, ".", fldr[outputpos]);
+                            list(REDIRECTFLAG, ".",outred, fldr[outputpos]);
                         else if (countl == 0 && counta > 0)
-                            listhidden(REDIRECTFLAG, ".", fldr[outputpos]);
+                            listhidden(REDIRECTFLAG, ".", outred,fldr[outputpos]);
                         else if (countl > 0 && counta == 0)
-                            longlist(0, REDIRECTFLAG, ".", fldr[outputpos]);
+                            longlist(0, REDIRECTFLAG, ".", outred,fldr[outputpos]);
                         else
-                            longlist(1, REDIRECTFLAG, ".", fldr[outputpos]);
+                            longlist(1, REDIRECTFLAG, ".",outred, fldr[outputpos]);
                 }
                 
             }
@@ -319,11 +335,11 @@ int main()
                         int f = getpid();
                         char it[10] = "";
                         sprintf(it, "%d", f);
-                        pinfo(it,REDIRECTFLAG,opfname);
+                        pinfo(it,REDIRECTFLAG,opfname,outred);
                     }
                     if(REDIRECTFLAG == 2 && s== 4)
                     {   strcpy(ww,g[1]);
-                        pinfo(ww,REDIRECTFLAG,opfname);
+                        pinfo(ww,REDIRECTFLAG,opfname,outred);
                     }
                     // long long ez = converttoint(ww);
                 }
@@ -332,7 +348,7 @@ int main()
                     int f = getpid();
                     char it[10] = "";
                     sprintf(it, "%d", f);
-                    pinfo(it,REDIRECTFLAG,opfname);
+                    pinfo(it,REDIRECTFLAG,opfname,outred);
                 }
             }
             else if (strncmp(commandsarray[i], "echo", 4) == 0)
@@ -353,9 +369,12 @@ int main()
                         opfname[nm++]=commandsarray[i][k];
                     }
                     opfname[nm]='\0';
+                    if(outred == 2)
+                    freopen(opfname,"w",stdout);
+                    if(outred == 3)
                     freopen(opfname,"a+",stdout);
                 }
-                
+               
                 printf("\"%s\"\n", ww);
                 if(REDIRECTFLAG == 2)
                 {
@@ -365,6 +384,18 @@ int main()
             else if (strcmp(commandsarray[i], "history") == 0)
             {
                 readhistory();
+            }
+            else if(strncmp(commandsarray[i], "setenv",6) == 0)
+            {
+                Setenv(commandsarray);
+            }
+            else if(strncmp(commandsarray[i], "unsetenv",8) == 0)
+            {
+                Unsetenv(commandsarray);
+            }
+            else if(strncmp(commandsarray[i],"quit",4) ==0)
+            {
+                exit(0);
             }
             else
             {
@@ -383,30 +414,41 @@ int main()
                         opos = b;
                     spi = strtok(NULL, " ");
                 }
-                if (inred == 1 && outred == 0 && pipe == 0)
+                if (inred == 1 && outred == 0 && pipe == 0)             //Only input redirection
                 {
-                    int fr = open(F[b-1], O_RDONLY);
+                    int fr = open(F[b-1], O_RDONLY);        //ipfile
                     if(fr < 0)
                     {
                         perror(F[b-1]);
                         continue;
                     }            
+                    int fdin = dup(STDIN_FILENO);
+                    dup2(fr, 0);
                     close(fr);
-                    freopen(F[b-1] , "r",stdin);
-                    char *argv = {"sort" ,NULL};
-                    execvp("sort",argv);                    
+                    systemcommand(F,0,b,REDIRECTFLAG);
+                    dup2(fdin, STDIN_FILENO);                    
+                    close(fdin);
                 }
                     
-                if(inred == 0 && outred == 1 && pipe == 0 ){
-                    if(REDIRECTFLAG == 2 )
-                    {
-                        freopen(F[b-1] ,"a+",stdout);
-                        systemcommand(F,0,b-2);
-                    }
-                }
                 else if (inred == 1 && outred == 1 && pipe == 0)
                 {
-
+                    int fdipfile = open(F[2], O_RDONLY);
+                    if(fdipfile < 0)
+                        {perror(fdipfile);
+                         continue;
+                        }
+                    int fdopfile = open(F[4] , O_CREAT | O_WRONLY | O_TRUNC , 0766);
+                    int fdstdin = dup(STDIN_FILENO);
+                    dup2(fdipfile , 0);   //Making ipfile stdin
+                    close(fdipfile);
+                    int fdstdout = dup(STDOUT_FILENO);
+                    dup2(fdopfile , 1);
+                    close(fdopfile);
+                    systemcommand(F,0,b,REDIRECTFLAG);
+                    dup2(fdstdin , STDIN_FILENO);
+                    dup2(fdstdout, STDOUT_FILENO);
+                    close(fdstdin);
+                    close(fdstdout);
                 }
                 else if (inred == 0 && outred == 0 && pipe == 0)
                 {
@@ -417,19 +459,19 @@ int main()
                     {
                         if (amper == 1)
                         {
-                            int r = systemcommand(F, 1, b);
+                            int r = systemcommand(F, 1, b,REDIRECTFLAG);
                             childprocid[numchildproc] = r; //Storing one more child pid
                             strcpy(childprocesses[numchildproc], F[0]);
                             numchildproc++;
                         }
                         else
                         {
-                            systemcommand(F, 0, b);
+                            systemcommand(F, 0, b,REDIRECTFLAG);
                         }
                     }
                     else
                     {
-                        systemcommand(F, 0, b);
+                        systemcommand(F, 0, b,REDIRECTFLAG);
                     }
                 }
             }

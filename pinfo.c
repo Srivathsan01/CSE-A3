@@ -1,14 +1,6 @@
-#include<stdio.h>
-#include<string.h>
-#include<stdlib.h>
-#include<sys/stat.h>
-#include<sys/types.h>
-#include<unistd.h>
-#include<errno.h>
-#include<fcntl.h>
-#include<math.h>
+#include "headerfiles.h"
 
-void pinfo(char* id,int REFLAG, char opfname[30])
+void pinfo(char* id,int REFLAG, char opfname[30],int outred)
 {
     char procpath[30] = "/proc/",exepath[20]="", statpath[] = "/stat";
     strcat(procpath,id);
@@ -42,6 +34,9 @@ void pinfo(char* id,int REFLAG, char opfname[30])
 
     if(REFLAG == 2)
     {
+        if(outred == 2)
+        freopen(opfname,"w",stdout);
+        if(outred == 3)
         freopen(opfname,"a+",stdout);
     }
     printf("pid -- %s\n",id);
