@@ -1,0 +1,15 @@
+vim &
+jobs
+emacs &
+jobs
+pwd
+jobs
+kill -9 3170
+pwd
+pwd
+clear
+jobs
+clear
+ls
+clear
+quit

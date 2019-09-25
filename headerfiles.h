@@ -11,3 +11,11 @@
 #include <string.h>
 #include <dirent.h>
 #include <wait.h>
+
+struct Job
+{
+    int procid;
+    char procname[30];
+    int terminated;
+};
+typedef struct Job JBS;

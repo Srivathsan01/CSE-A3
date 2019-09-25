@@ -9,17 +9,16 @@
 
 void addtohistory(char *newcommand)
 {
-    char *com=(char *)malloc(100*sizeof(char));
-    com = newcommand;
-    char str[100];
+    char *com = newcommand;
+    char str[100];   
     int numcommands = 0;
     FILE* fptr;
     FILE* temp;
-    if((fptr=fopen("/home/srivathsan/Desktop/CSE/A2/history.txt", "a+")) == NULL)
+    if((fptr=fopen("/home/srivathsan/Desktop/CSE/A3/history.txt", "a+")) == NULL)
     {                                                                                           //Read + Write the history.txt
         perror("history.txt");
     }
-    if((temp = fopen("/home/srivathsan/Desktop/CSE/A2/temp.txt", "w")) == NULL)
+    if((temp = fopen("/home/srivathsan/Desktop/CSE/A3/temp.txt", "w")) == NULL)
     {                                                                                           //Temp file.Take last 19 entries to temp.txt add the new command and rename it to history
         perror("temp.txt");
     }

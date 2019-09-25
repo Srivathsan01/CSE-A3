@@ -11,14 +11,9 @@
 #include <string.h>
 #include <dirent.h>
 #include <wait.h>
-struct Job
-{
-    int jobnumber;
-    char *procid;
-    char *procname;
-    int terminated;
-}JOBS[100];
+#include "headerfiles.h"
 
+JBS JOBS[100];
 int main()
 {
     struct utsname udata;
@@ -61,8 +56,6 @@ int main()
     int numchildproc = 0;
     while (1)
     {
-        int childprocid[30];         //Array having all child pid's
-        char childprocesses[30][20]; //Array containing all names of child processes
         char *temp = (char *)calloc(50, sizeof(char));
         char **commandsarray = (char **)calloc(10000, sizeof(char *));
         for (int i = 0; i < 20; i++)
@@ -192,7 +185,7 @@ int main()
             }
             else if(strncmp(commandsarray[i] , "jobs", 4) ==0)
             {
-                jobs(childprocesses,childprocid,numchildproc);
+                jobs(JOBS,numchildproc);
             }
             else if (strncmp(commandsarray[i], "ls", 2) == 0)
             {
@@ -460,8 +453,10 @@ int main()
                         if (amper == 1)
                         {
                             int r = systemcommand(F, 1, b,REDIRECTFLAG);
-                            childprocid[numchildproc] = r; //Storing one more child pid
-                            strcpy(childprocesses[numchildproc], F[0]);
+                            JOBS[numchildproc].procid = r; //Storing one more child pid
+                            strcpy(JOBS[numchildproc].procname, F[0]);
+                            JOBS[numchildproc].terminated = 0;
+                            
                             numchildproc++;
                         }
                         else
@@ -479,15 +474,17 @@ int main()
             int retid;
             for (int f = 0; f < numchildproc; f++)
             {
-                if ((retid = waitpid(childprocid[f], &status, WNOHANG | WUNTRACED)) > 0)
+                if ((retid = waitpid(JOBS[f].procid, &status, WNOHANG | WUNTRACED)) > 0)
                 { // Return if no child exits or child stops
                     if (WIFEXITED(status))
                     {
-                        fprintf(stderr, "%s with pid %d exited normally\n", childprocesses[f], retid);
+                        fprintf(stderr, "%s with pid %d exited normally\n", JOBS[f].procname, retid);
+                        JOBS[f].terminated=1;
                     }
                     if (WIFSIGNALED(status))
                     {
-                        fprintf(stderr, "%s with pid %d exited due to a signal", childprocesses[f], childprocid[f]);
+                        fprintf(stderr, "%s with pid %d exited due to a signal", JOBS[f].procname, JOBS[f].procid);
+                        JOBS[f].terminated=1;
                     }
                 }
             }

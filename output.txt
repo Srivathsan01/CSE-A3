@@ -1,5 +1,7 @@
-.
-spiderffh
-redstone
-ragnarok
-..
+{
+}
+#include<stdio.h>
+#include<timer.h>
+int main()
+	return 0;
+	sleep(10);
