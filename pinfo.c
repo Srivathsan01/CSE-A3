@@ -8,7 +8,7 @@
 #include<fcntl.h>
 #include<math.h>
 
-void pinfo(char* id)
+void pinfo(char* id,int REFLAG, char opfname[30])
 {
     char procpath[30] = "/proc/",exepath[20]="", statpath[] = "/stat";
     strcat(procpath,id);
@@ -39,10 +39,19 @@ void pinfo(char* id)
     char buffer[40];
     strcat(exepath,"/exe");
     readlink(exepath,buffer,40);
+
+    if(REFLAG == 2)
+    {
+        freopen(opfname,"a+",stdout);
+    }
     printf("pid -- %s\n",id);
     printf("Process Status -- %s\n",status);
     printf("memory -- %s\n",virmem);
     printf("executable path -- %s\n",buffer);
+    if(REFLAG == 2)
+    {
+        freopen("/dev/tty","w",stdout);
+    }
     // fscanf(fl, "%d" , &pid)
     fclose(fl);
 }

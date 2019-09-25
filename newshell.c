@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <sys/utsname.h>
 #include <pwd.h>
 #include <string.h>
@@ -91,23 +92,23 @@ int main()
                 }
             for (int g = 0; g < strlen(commandsarray[i]); g++)
             {
-                if (commandsarray[i][g] == '&')
+                if (commandsarray[i][g] == '&')             //0 means none occur
                     amper = 1;
                 if (commandsarray[i][g] == '<')
                 {
                     inred = 1;
-                    REDIRECTFLAG = 1;
+                    REDIRECTFLAG = 1;                       // 1 means <
                 }
 
                 if (commandsarray[i][g] == '>')
                 {
-                    outred = 1;
-                    REDIRECTFLAG = 2;
+                    outred++;
+                    REDIRECTFLAG = 2;                       // 2 means >
                 }
                 if (commandsarray[i][g] == "|")
                 {
                     pipe = 1;
-                    REDIRECTFLAG = 3;
+                    REDIRECTFLAG = 3;                       // 3 means both occur
                 }
             }
 
@@ -301,26 +302,65 @@ int main()
                     s++;
                     ben = strtok(NULL, " ");
                 }
-
+                char opfname[30];
+                if(REDIRECTFLAG == 2)
+                    {
+                        strcpy(opfname,g[s-1]);
+                    }
                 if (s > 1)
                 {
                     char ww[10];
+                    if(REDIRECTFLAG == 0)
+                    {
                     strcpy(ww, g[1]);
+                    }
+                    if(REDIRECTFLAG == 2 && s==3)
+                    {
+                        int f = getpid();
+                        char it[10] = "";
+                        sprintf(it, "%d", f);
+                        pinfo(it,REDIRECTFLAG,opfname);
+                    }
+                    if(REDIRECTFLAG == 2 && s== 4)
+                    {   strcpy(ww,g[1]);
+                        pinfo(ww,REDIRECTFLAG,opfname);
+                    }
                     // long long ez = converttoint(ww);
-                    pinfo(ww);
                 }
                 else
                 {
                     int f = getpid();
                     char it[10] = "";
                     sprintf(it, "%d", f);
-                    pinfo(it);
+                    pinfo(it,REDIRECTFLAG,opfname);
                 }
             }
             else if (strncmp(commandsarray[i], "echo", 4) == 0)
             {
-                char *u = &(commandsarray[i][5]);
-                printf("\"%s\"\n", u);
+                char opfname[30];
+                char ww[100];
+                int d,nm=0;
+                for(d=5;d < strlen(commandsarray[i]); d++)
+                    {   if(commandsarray[i][d] == '>')
+                            {break;}
+                        ww[d-5] = commandsarray[i][d];
+                    }
+                ww[d-5]='\0';
+                if(REDIRECTFLAG == 2)
+                {
+                    for(int k=d+2; k < strlen(commandsarray[i]); k++)
+                    {
+                        opfname[nm++]=commandsarray[i][k];
+                    }
+                    opfname[nm]='\0';
+                    freopen(opfname,"a+",stdout);
+                }
+                
+                printf("\"%s\"\n", ww);
+                if(REDIRECTFLAG == 2)
+                {
+                    freopen("/dev/tty","w",stdout);
+                }
             }
             else if (strcmp(commandsarray[i], "history") == 0)
             {
@@ -345,26 +385,32 @@ int main()
                 }
                 if (inred == 1 && outred == 0 && pipe == 0)
                 {
-                    if (strcmp(F[0], "sort") == 0)
-                        systemcommand(F, 0, b);
+                    int fr = open(F[b-1], O_RDONLY);
+                    if(fr < 0)
+                    {
+                        perror(F[b-1]);
+                        continue;
+                    }            
+                    close(fr);
+                    freopen(F[b-1] , "r",stdin);
+                    char *argv = {"sort" ,NULL};
+                    execvp("sort",argv);                    
                 }
-                else if (inred == 0 && outred == 1 && pipe == 0)
-                {
-                    // freopen(F[b], "a+",STDOUT);
-                    // int fds;
-                    // for(int l=0; l < opos; l++)
-                    // {
-                    // fds = open(F[0], O_RDONLY);
-                    // dup2(fds,0);
-                    // dup2(ofd,1);
-                    // printf()
-                    // }
+                    
+                if(inred == 0 && outred == 1 && pipe == 0 ){
+                    if(REDIRECTFLAG == 2 )
+                    {
+                        freopen(F[b-1] ,"a+",stdout);
+                        systemcommand(F,0,b-2);
+                    }
                 }
                 else if (inred == 1 && outred == 1 && pipe == 0)
                 {
+
                 }
-                if (inred == 0 && outred == 0 && pipe == 0)
+                else if (inred == 0 && outred == 0 && pipe == 0)
                 {
+                    
                     char syscommand[30];
                     strcpy(syscommand, F[0]);
                     if (b > 1)

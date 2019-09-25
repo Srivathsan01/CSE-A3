@@ -1,8 +1,7 @@
-#include<time.h>
 #include<stdio.h>
-
+#include<timer.h>
 int main()
 {
-    sleep(5);
-    return 0;
+	sleep(10);
+	return 0;
 }

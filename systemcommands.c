@@ -15,33 +15,8 @@ int systemcommand(char **syscom,int flag, int len)
     char **argu = (char **)malloc(100*sizeof(char));
     for(int p=0;p < len; p++)
         argu[p] = (char*)malloc(40*sizeof(char));
-    if(strcmp(syscom[0], "sort") == 0)
-    {
-        argu[0]="sh";
-        argu[1]="-c";
-        strcpy(argu[2],"");
-        for(int u=0; u < len ; u++)
-        {
-            strcat(argu[2],syscom[u]);
-            strcat(argu[2]," ");
-        }
-      int cut=0;
-      for(int i=0;argu[i] != NULL; i++)
-      {
-        cut++;
-      }
-    argu[cut]=NULL;
-    execvp(argu[0],argu);
-    }
-    else
-    {
         argu=syscom;
-        int cut=0;
-        for(int i=0;argu[i] != NULL && strcmp(argu[i],"&") != 0 ; i++)
-        {
-         cut++;
-        }
-        argu[cut]=NULL;
+        argu[len]=NULL;
         // argu[] = NULL;
         if(flag==1)         // & was given
         {
@@ -73,6 +48,7 @@ int systemcommand(char **syscom,int flag, int len)
                 int d=execvp(argu[0],argu);
                   if (d== -1)
                     printf("command not found: %s\n",syscom[0]);
+                    //DIFF NOT WORKING
             }
             else
             {
@@ -80,5 +56,5 @@ int systemcommand(char **syscom,int flag, int len)
                 wait(NULL);
             }
         }
-    }
+    
 }
