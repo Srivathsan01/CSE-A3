@@ -1,15 +1,20 @@
-vim &
 jobs
+historyvim &jobs
 emacs &
+jobskill -9 7796pwd
 jobs
-pwd
+jobsvim &jobs
 jobs
-kill -9 3170
-pwd
-pwd
-clear
+firefox &jobsjobs
+kill -9 7797
+jobsjobsfirefox &
 jobs
-clear
-ls
-clear
+vim &jobsemacs &
+jobs
+kill -9 8655jobspwd
+jobs
+firefox &jobsjobs
+vim &
+jobsqquit
+pwd
 quit

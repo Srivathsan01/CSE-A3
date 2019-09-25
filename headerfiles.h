@@ -14,6 +14,7 @@
 
 struct Job
 {
+    int jobnumber;
     int procid;
     char procname[30];
     int terminated;
