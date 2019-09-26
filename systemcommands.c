@@ -1,4 +1,13 @@
 #include "headerfiles.h"
+
+void handlectrlz(int sig_num)
+{
+    printf("CTRLZ SPOTTED\n");
+    setpgid(0,0);
+    pid_t pid = getpid();
+    kill(pid, SIGSTOP);
+}
+
 int systemcommand(char **syscom,int flag, int len,int REDIR)
 {
     
@@ -14,17 +23,18 @@ int systemcommand(char **syscom,int flag, int len,int REDIR)
         {
             int status;
             int ind = fork();
-            if(ind==0)
+            if(ind==0)                              //child
             {
-                setpgid(0,0);       
+                setpgid(0,0);
+                
                 // printf("pid = %d\n",getpid());
                 int d=execvp(argu[0],argu);            //Child execvp(command)
                 if (d== -1)
                     printf("command not found: %s\n",syscom[0]);
             }
-            else if(ind > 0)
+            else if(ind > 0)                                            // parent
             {
-                waitpid(-1,&status, WNOHANG | WUNTRACED);
+                waitpid(ind,&status, WNOHANG | WUNTRACED);
                 return ind;                                             //return process id to shell
                 // printf("Child pushed to background\n");
                 ///USE KILL COMMAND kill(pid,0)
@@ -33,6 +43,7 @@ int systemcommand(char **syscom,int flag, int len,int REDIR)
         }
         else
         {
+            int status;
             int ind = fork();
             if(ind ==0)
             {
@@ -45,7 +56,12 @@ int systemcommand(char **syscom,int flag, int len,int REDIR)
             else
             {
                 // printf("Parent waiting\n");
-                wait(NULL);
+                waitpid(ind, &status, WUNTRACED);
+                if(WIFEXITED(status) == 0)
+                {
+                    return ind;
+                }
+                return 0;
             }
         }
     

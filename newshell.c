@@ -13,16 +13,13 @@
 #include <wait.h>
 #include "headerfiles.h"
 
-void  handlectrlc(int sig_number)
-{
-    signal(SIGINT, SIG_IGN);
-    fflush(stdout);
-}
 
 JBS JOBS[100];
 int main()
 {
-    signal(SIGINT, handlectrlc);
+    signal(SIGINT, SIG_IGN);
+    signal(SIGTSTP, SIG_IGN);
+
     struct utsname udata;
     uname(&udata);
 
@@ -126,7 +123,10 @@ int main()
                 REDIRECTFLAG = 3;
 
             addtohistory(commandsarray[i]);
-
+            if(REDIRECTFLAG == 4)
+            {
+                // pipes(commandsarray[i]);
+            }
             if (strcmp(commandsarray[i], "pwd") == 0)
             {
                 char *b = (char *)malloc(100 * sizeof(char));
@@ -452,7 +452,10 @@ int main()
                     int fdin = dup(STDIN_FILENO);
                     dup2(fr, 0);
                     close(fr);
-                    systemcommand(F,0,b,REDIRECTFLAG);
+                    int p=systemcommand(F,0,b,REDIRECTFLAG);
+                    if( p > 1)
+                        {addtojobs(JOBS,commandsarray[i],numchildproc,p);
+                        numchildproc++;}
                     dup2(fdin, STDIN_FILENO);                    
                     close(fdin);
                 }
@@ -471,7 +474,10 @@ int main()
                     int fdstdout = dup(STDOUT_FILENO);
                     dup2(fdopfile , 1);
                     close(fdopfile);
-                    systemcommand(F,0,b,REDIRECTFLAG);
+                    int p=systemcommand(F,0,b,REDIRECTFLAG);
+                    if( p > 1){
+                        addtojobs(JOBS,commandsarray[i],numchildproc,p);
+                        numchildproc++;}
                     dup2(fdstdin , STDIN_FILENO);
                     dup2(fdstdout, STDOUT_FILENO);
                     close(fdstdin);
@@ -495,12 +501,19 @@ int main()
                         }
                         else
                         {
-                            systemcommand(F, 0, b,REDIRECTFLAG);
+                            int p=systemcommand(F, 0, b,REDIRECTFLAG);
+                            if( p > 1)
+                            {addtojobs(JOBS,commandsarray[i],numchildproc,p);
+                             numchildproc++;}
                         }
                     }
                     else
                     {
-                        systemcommand(F, 0, b,REDIRECTFLAG);
+                        int p =systemcommand(F, 0, b,REDIRECTFLAG);
+                        if( p > 1)
+                            {addtojobs(JOBS,commandsarray[i],numchildproc,p);
+                             numchildproc++;}
+                    
                     }
                 }
             }

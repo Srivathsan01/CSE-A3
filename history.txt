@@ -1,19 +1,19 @@
-jobsvim &jobs
-fg 1
-vim &jobsps
-ps
-vim &jobspwd
-fg 1
-pwdemacs &jobs
-fg 1
-pwdlsjobs
+qlcearquit
 vim &
-quitvimclear
+jobsvimvim &
+vim
+vimlsjobs
+ps
+jobsqquit
+pwd
+lsclearvim
+pwd
+jobsquitpwd
+vim
+vimpwdvim
+vim
+pwdvimpwd
 jobs
-clearpwdclear
-ls
-clearqq
-quit
-pwdclearclear
-clear
-pwdquit
+qquitvim
+pwd
+jobsquit
