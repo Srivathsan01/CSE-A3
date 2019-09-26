@@ -1,20 +1,19 @@
+jobsvim &jobs
+fg 1
+vim &jobsps
+ps
+vim &jobspwd
+fg 1
+pwdemacs &jobs
+fg 1
+pwdlsjobs
+vim &
+quitvimclear
 jobs
-qqvim &
-emacs &
-jobskjob 1 9jobs
-kjob 1 9
-vim &gedit &jobs
-kjob 1 9
-pwdjobspwd
-jobs
-kjob 1 9pwdclear
-jobs
-vim &emacs &jobs
-bg 1
-jobsvim &emacs &
-jobs
-bg 1emacs &vim &
-jobs
-bg 1pwdjobs
-bg 2
-jobs
+clearpwdclear
+ls
+clearqq
+quit
+pwdclearclear
+clear
+pwdquit

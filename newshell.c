@@ -13,9 +13,16 @@
 #include <wait.h>
 #include "headerfiles.h"
 
+void  handlectrlc(int sig_number)
+{
+    signal(SIGINT, SIG_IGN);
+    fflush(stdout);
+}
+
 JBS JOBS[100];
 int main()
 {
+    signal(SIGINT, handlectrlc);
     struct utsname udata;
     uname(&udata);
 
@@ -392,20 +399,30 @@ int main()
             }
             else if(strncmp(commandsarray[i],"quit",4) ==0)
             {
+                overkill();
                 exit(0);
             }
             else if(strncmp(commandsarray[i],"bg",2) ==0)
             {
                 if(strlen(commandsarray[i]) == 2)
                 {
-                    perror(commandsarray);
+                    printf("Usage: bg <jobnumber>\n");
                     continue;
                 }
                 bg(commandsarray[i],JOBS,numchildproc);
             }
             else if(strncmp(commandsarray[i],"fg",2) ==0)
             {
-                
+                if(strlen(commandsarray[i]) == 2)
+                {
+                    printf("Usage: fg <jobnumber>\n");
+                    continue;
+                }
+                fg(commandsarray[i],JOBS,numchildproc);
+            }
+            else if(strcmp(commandsarray[i],"overkill") == 0)
+            {
+                overkill(JOBS,numchildproc);
             }
             else
             {
@@ -487,11 +504,14 @@ int main()
                     }
                 }
             }
+            /////////     CHECKING IF PROCESSES HAVE EXITED  ////////
+
             int status;
             int retid;
             for (int f = 0; f < numchildproc; f++)
             {
-                if ((retid = waitpid(JOBS[f].procid, &status, WNOHANG | WUNTRACED)) > 0)
+                retid = waitpid(JOBS[f].procid, &status, WNOHANG | WUNTRACED);
+                if (retid > 0)
                 { // Return if no child exits or child stops
                     if (WIFEXITED(status))
                     {

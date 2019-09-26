@@ -1,5 +1,5 @@
 #include "headerfiles.h"
-bg(char *cmd,struct Job JOBS[100], int numchild)
+void bg(char *cmd,struct Job JOBS[100], int numchild)
 {
     char *tok = strtok(cmd," ");
     tok = strtok(NULL," ");
@@ -10,7 +10,7 @@ bg(char *cmd,struct Job JOBS[100], int numchild)
         if(JOBS[c].jobnumber == jobnum  && JOBS[c].terminated == 0)
         {
             present = 1;
-            jobid = JOBS[c].procid;
+            jobid = JOBS[c].procid;         //Get the pid of the process specified
             break;
         }
     }
@@ -21,7 +21,9 @@ bg(char *cmd,struct Job JOBS[100], int numchild)
     }
     if(present == 1)
     {
-        kill(jobid, SIGCONT);
+        int check = kill(jobid, SIGCONT);
+        if(check == 0)
+        printf("PID %d has been pushed to the Background\n",jobid);
     }
 
 }
