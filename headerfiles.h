@@ -11,7 +11,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <wait.h>
-
+#include <signal.h>
 struct Job
 {
     int jobnumber;

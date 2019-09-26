@@ -183,6 +183,10 @@ int main()
                     }
                 }
             }
+            else if(strncmp(commandsarray[i] , "kjob" , 4) == 0)
+            {
+                kjob(commandsarray[i],JOBS,numchildproc);
+            }
             else if(strncmp(commandsarray[i] , "jobs", 4) ==0)
             {
                 jobs(JOBS,numchildproc);
@@ -390,6 +394,19 @@ int main()
             {
                 exit(0);
             }
+            else if(strncmp(commandsarray[i],"bg",2) ==0)
+            {
+                if(strlen(commandsarray[i]) == 2)
+                {
+                    perror(commandsarray);
+                    continue;
+                }
+                bg(commandsarray[i],JOBS,numchildproc);
+            }
+            else if(strncmp(commandsarray[i],"fg",2) ==0)
+            {
+                
+            }
             else
             {
                 char **F = (char **)calloc(10, sizeof(char *));
@@ -483,7 +500,7 @@ int main()
                     }
                     if (WIFSIGNALED(status))
                     {
-                        fprintf(stderr, "%s with pid %d exited due to a signal", JOBS[f].procname, JOBS[f].procid);
+                        fprintf(stderr, "%s with pid %d exited due to a signal\n", JOBS[f].procname, JOBS[f].procid);
                         JOBS[f].terminated=1;
                     }
                 }
