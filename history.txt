@@ -17,3 +17,5 @@ q
 quit
 cls | more
 quit
+pwd
+
