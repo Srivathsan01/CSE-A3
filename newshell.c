@@ -113,19 +113,19 @@ int main()
                         {outred++;
                         g++;}
                 }
-                if (commandsarray[i][g] == "|")
+                if (commandsarray[i][g] == '|')
                 {
                     pipe = 1;
-                    REDIRECTFLAG = 4;                       // 3 means both occur
+                    REDIRECTFLAG = 4;                     
                 }
             }
             if(inred > 0 && outred > 0)
-                REDIRECTFLAG = 3;
+                REDIRECTFLAG = 3;                        // 3 means both occur
 
             addtohistory(commandsarray[i]);
             if(REDIRECTFLAG == 4)
             {
-                // pipes(commandsarray[i]);
+                pipes(commandsarray[i]);
             }
             if (strcmp(commandsarray[i], "pwd") == 0)
             {
@@ -198,7 +198,7 @@ int main()
             {
                 jobs(JOBS,numchildproc);
             }
-            else if (strncmp(commandsarray[i], "ls", 2) == 0)
+            else if (strncmp(commandsarray[i], "ls", 2) == 0 && REDIRECTFLAG != 4)
             {
                 if (strlen(commandsarray[i]) == 2)
                 {

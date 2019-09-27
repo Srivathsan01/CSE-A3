@@ -1,19 +1,19 @@
-qlcearquit
-vim &
-jobsvimvim &
-vim
-vimlsjobs
-ps
-jobsqquit
-pwd
-lsclearvim
-pwd
-jobsquitpwd
-vim
-vimpwdvim
-vim
-pwdvimpwd
-jobs
-qquitvim
-pwd
-jobsquit
+ls | cat
+ls | cat
+ls | cat
+ls
+ls | wc
+cat main.c
+ls
+cat jobs.c
+cat jobs.c | wc
+ls
+ls
+cat ls
+cat jobs.c | ls
+more
+ls | more
+q
+quit
+cls | more
+quit
